@@ -65,8 +65,11 @@ class P115AuthenticationError(P115OSError):
 
 
 class P115BusyOSError(P115OSError):
-    """当操作繁忙时抛出（115 网盘的复制、移动、删除、还原只允许最多一个操作进行中）
-    """
+    """当操作繁忙时抛出（115 网盘的复制、移动、删除、还原只允许最多一个操作进行中）"""
+    pass
+
+# 兼容旧版 p115updatedb
+BusyOSError = P115BusyOSError
 
 
 class P115DataError(P115OSError):
@@ -104,7 +107,7 @@ class P115NoSpaceError(P115OperationalError, PermissionError):
     """
 
 
-class P115NotSupportedError(P115OperationalError):
+class P115NotSupportedError(P115OperationalError, PermissionError):
     """当调用不存在的接口或者接口不支持此操作时抛出
     """
 
@@ -131,7 +134,7 @@ def error(*args, **kwds) -> BaseException:
         会根据传入的位置参数，做一些类型推断
 
         - 第 1 个位置参数，记作 `errcode`，大概是一个 `errno2.errno` 的枚举类型，不能成功推断则用 `errno2.errno.EIO`
-        - 第 2 个位置参数（若第 1 个位置参数不满足上一条，则用此参数），记作 `exctype`，大概是一个 `P115Error` 类型或其子类型，不能成功推断则用 `P115OSError`
+        - 第 2 个位置参数（若第 1 个位置参数不满足上一条，则用此参数），大概是一个 `P115Error` 类型或其子类型，不能成功推断则用 `P115OSError`
 
         假设剩余的所有没被提取的位置参数记作 `rargs`，最终构建的异常为 `exctype(errcode, *rargs, **kwds)`
     """
@@ -152,7 +155,7 @@ def throw(*args, **kwds) -> Never:
         会根据传入的位置参数，做一些类型推断
 
         - 第 1 个位置参数，记作 `errcode`，大概是一个 `errno2.errno` 的枚举类型，不能成功推断则用 `errno2.errno.EIO`
-        - 第 2 个位置参数（若第 1 个位置参数不满足上一条，则用此参数），记作 `exctype`，大概是一个 `P115Error` 类型或其子类型，不能成功推断则用 `P115OSError`
+        - 第 2 个位置参数（若第 1 个位置参数不满足上一条，则用此参数），大概是一个 `P115Error` 类型或其子类型，不能成功推断则用 `P115OSError`
 
         假设剩余的所有没被提取的位置参数记作 `rargs`，最终抛出的异常为 `exctype(errcode, *rargs, **kwds)`
     """
@@ -184,4 +187,3 @@ for errcode, exctype in _errno2error.items():
 
 def __getattr__(attr: str, /) -> type[P115OSError]:
     raise AttributeError(attr)
-
